@@ -93,7 +93,7 @@ html.is-spatial {
   }
   .top-section {
     background-color: transparent;
-    --xr-background-material: translucent;
+    --xr-background-material: thin;
     border-radius: 5%;
     }
   

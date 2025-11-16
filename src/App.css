@@ -98,7 +98,9 @@
   background-color: #ffffff;
   padding: 1rem;
   border-radius: 8px;
-  overflow: auto;
+  overflow: hidden;
+  position: relative;
+  min-height: 400px;
 }
 
 .bottom-section {

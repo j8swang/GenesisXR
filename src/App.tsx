@@ -1,15 +1,8 @@
-import { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import SecondPage from "./SecondPage";
-import {
-  Reality,
-  SceneGraph,
-  BoxEntity,
-  ModelEntity,
-  UnlitMaterial,
-  ModelAsset,
-} from "@webspatial/react-sdk";
+import ModelDemo from "./ModelDemo";
 
 declare const __XR_ENV_BASE__: string;
 
@@ -40,119 +33,185 @@ const BASIC_ELEMENTS: Element[] = [
   { id: "plant", name: "Plant", emoji: "🌱" },
   { id: "rain", name: "Rain", emoji: "🌧️" },
   { id: "mud", name: "Mud", emoji: "🟤" },
-  { id: "energy", name: "Energy", emoji: "⚡" },
+  { id: "energy", name: "Energy", emoji: "🔋" },
   { id: "stone", name: "Stone", emoji: "🪨" },
   { id: "steam", name: "Steam", emoji: "💨" },
 ];
 
-function App() {
+function AppContent() {
   const [selectedElement, setSelectedElement] = useState<ElementType | null>(
     null
   );
-  const [createdScenes, setCreatedScenes] = useState<ElementType[]>([]);
+  const [supported, setSupported] = useState(false);
+  const modelRef = useRef<HTMLModelElement | null>(null);
+
+  useEffect(() => {
+    const isSupported =
+      typeof window !== "undefined" && "HTMLModelElement" in window;
+    setSupported(isSupported);
+    console.log("HTMLModelElement supported:", isSupported);
+  }, []);
+
+  // Apply initial orientation once after the model is ready
+  useEffect(() => {
+    console.log("Model effect triggered:", {
+      supported,
+      selectedElement,
+      hasRef: !!modelRef.current,
+    });
+    if (!supported || !modelRef.current || selectedElement !== "fire") return;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const el = modelRef.current!;
+        console.log("Waiting for model to be ready...");
+        // Wait for browser's default placement
+        await el.ready;
+        console.log("Model is ready!");
+        // Give WebKit a moment to finish any final fitting
+        await new Promise<void>((r) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => r()))
+        );
+        if (cancelled) return;
+
+        // Rotate on top of the default placement matrix
+        const baseArr = Array.from(el.entityTransform.toFloat64Array());
+        const base = new DOMMatrix(baseArr);
+        const rotated = base.rotateAxisAngle(0, 1, 0, 90); // +90° around Y
+        el.entityTransform = rotated;
+        console.log("Model transform applied");
+      } catch (e) {
+        console.warn("Initial transform failed:", e);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [supported, selectedElement]);
 
   const handleElementClick = (element: ElementType) => {
+    console.log("Element clicked:", element);
     setSelectedElement(element);
-
-    // Create a volume scene for the selected element
-    createVolumeScene(element);
-
-    // Track created scenes
-    if (!createdScenes.includes(element)) {
-      setCreatedScenes([...createdScenes, element]);
-    }
   };
 
-  const createVolumeScene = (elementType: ElementType) => {
-    // TODO: Implement WebSpatial volume scene creation
-    // This will create a second volume scene with the 3D model of the element
-    console.log(`Creating volume scene for element: ${elementType}`);
-
-    // Placeholder for WebSpatial API call
-    // Example structure (actual API may vary):
-    // const session = getSession();
-    // if (session) {
-    //   session.createVolumeScene({
-    //     element: elementType,
-    //     // ... other config
-    //   });
-    // }
+  const getModelUrl = (element: ElementType): string => {
+    if (element === "fire") return "/models/fire.usdz";
+    return "/models/fire.usdz"; // Default fallback
   };
 
+  return (
+    <div className="main-layout" enable-xr>
+      <div className="menu-column" enable-xr>
+        <h2 style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+          Elements
+        </h2>
+        <div style={{ marginBottom: "1rem" }} enable-xr>
+          <Link
+            to="/model-demo"
+            className="element-button"
+            style={{ textDecoration: "none", display: "block" }}
+            enable-xr
+          >
+            <span style={{ fontWeight: 600 }}>Open Model Demo</span>
+          </Link>
+        </div>
+        <div className="element-menu" enable-xr>
+          {BASIC_ELEMENTS.map((element) => (
+            <button
+              key={element.id}
+              className={`element-button ${
+                selectedElement === element.id ? "selected" : ""
+              }`}
+              onClick={() => handleElementClick(element.id)}
+              enable-xr
+            >
+              <span className="element-emoji" enable-xr>
+                {element.emoji}
+              </span>
+              <span className="element-name" enable-xr>
+                {element.name}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="right-area" enable-xr>
+        <div className="top-section" enable-xr>
+          {selectedElement === "fire" ? (
+            supported ? (
+              <>
+                <p
+                  style={{
+                    marginBottom: "0.5rem",
+                    fontSize: "0.9rem",
+                    color: "#666",
+                  }}
+                >
+                  Loading fire model...
+                </p>
+                {React.createElement(
+                  "model",
+                  {
+                    ref: modelRef,
+                    id: "fire-model",
+                    stagemode: "orbit",
+                    style: {
+                      width: "100%",
+                      height: "100%",
+                      minHeight: "400px",
+                      borderRadius: 12,
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      overflow: "hidden",
+                      display: "block",
+                    },
+                    "enable-xr": true,
+                  } as any,
+                  [
+                    React.createElement("source", {
+                      key: "source",
+                      src: getModelUrl("fire"),
+                      type: "model/vnd.usdz+zip",
+                    }),
+                    React.createElement("img", {
+                      key: "img",
+                      alt: "Loading fire model…",
+                      src: "/poster.png",
+                      style: {
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      },
+                    }),
+                  ]
+                )}
+              </>
+            ) : (
+              <p>
+                Your browser doesn't support the HTML &lt;model&gt; element.
+                Supported: {supported.toString()}
+              </p>
+            )
+          ) : (
+            <p style={{ color: "#999" }}>
+              Select an element to view its 3D model
+            </p>
+          )}
+        </div>
+        <div className="bottom-section" enable-xr></div>
+      </div>
+    </div>
+  );
+}
+
+function App() {
   return (
     <Router basename={__XR_ENV_BASE__}>
       <Routes>
         <Route path="/second-page" element={<SecondPage />} />
-        <Route
-          path="/"
-          element={
-            <div className="main-layout" enable-xr>
-              <div className="menu-column" enable-xr>
-                <h2 style={{ textAlign: "center", marginBottom: "1.5rem" }}>
-                  Elements
-                </h2>
-                <div className="element-menu" enable-xr>
-                  {BASIC_ELEMENTS.map((element) => (
-                    <button
-                      key={element.id}
-                      className={`element-button ${
-                        selectedElement === element.id ? "selected" : ""
-                      }`}
-                      onClick={() => handleElementClick(element.id)}
-                      enable-xr
-                    >
-                      <span className="element-emoji" enable-xr>
-                        {element.emoji}
-                      </span>
-                      <span className="element-name" enable-xr>
-                        {element.name}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="right-area" enable-xr>
-                <div className="top-section" enable-xr>
-                  {selectedElement ? (
-                    <div className="element-display" enable-xr>
-                      <h3>
-                        Selected:{" "}
-                        {
-                          BASIC_ELEMENTS.find((e) => e.id === selectedElement)
-                            ?.name
-                        }
-                      </h3>
-                      <p>Volume scene created for: {selectedElement}</p>
-                    </div>
-                  ) : (
-                    <div className="element-display" enable-xr>
-                      <p>Click an element to create a 3D volume scene</p>
-                    </div>
-                  )}
-                </div>
-                <div className="bottom-section" enable-xr>
-                  <h4>Created Scenes:</h4>
-                  {createdScenes.length > 0 ? (
-                    <ul className="scene-list" enable-xr>
-                      {createdScenes.map((scene) => {
-                        const element = BASIC_ELEMENTS.find(
-                          (e) => e.id === scene
-                        );
-                        return (
-                          <li key={scene}>
-                            {element?.emoji} {element?.name}
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  ) : (
-                    <p>No scenes created yet</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          }
-        />
+        <Route path="/model-demo" element={<ModelDemo />} />
+        <Route path="/" element={<AppContent />} />
       </Routes>
     </Router>
   );
