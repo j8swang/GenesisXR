@@ -1,12 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-<BrowserRouter basename={__XR_ENV_BASE__}>
-  <Routes></Routes>
-</BrowserRouter>;
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SecondPage from "./SecondPage";
 import ModelDemo from "./ModelDemo";
-import { Model } from "@WebSpatial/react-sdk";
+import { Model } from "@webspatial/react-sdk";
 import fireModel from "./assets/models/fire.usdz?url";
 import earthModel from "./assets/models/Earth.usdz?url";
 import waterModel from "./assets/models/water.usdz?url";
