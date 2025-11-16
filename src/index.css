@@ -109,6 +109,8 @@ html.is-spatial {
     transform-origin: left;
     transform: rotateY(-45deg);
     --xr-back:50px;
+  
+  
   }
 }
 
