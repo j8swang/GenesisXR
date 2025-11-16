@@ -9,12 +9,21 @@
   display: flex;
   width: 100%;
   height: 100vh;
-  gap: 10rem;
+  gap: 2rem;
 }
 
 .menu-column {
-  width: 20%;
-  min-width: 200px;
+  width: 15%;
+  min-width: 180px;
+  background-color: #f0f0f0;
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-y: auto;
+}
+
+.menu-column-right {
+  width: 15%;
+  min-width: 180px;
   background-color: #f0f0f0;
   padding: 1rem;
   border-radius: 8px;

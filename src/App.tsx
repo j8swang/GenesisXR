@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+<BrowserRouter basename={__XR_ENV_BASE__}>
+  <Routes></Routes>
+</BrowserRouter>;
 import SecondPage from "./SecondPage";
 import ModelDemo from "./ModelDemo";
 import { Model } from "@WebSpatial/react-sdk";
@@ -213,16 +216,29 @@ function AppContent() {
               >
                 {firstSelected && (
                   <div className="model-wrapper model-left" enable-xr>
-                    <p
-                      style={{
-                        marginBottom: "0.5rem",
-                        fontSize: "0.9rem",
-                        color: "#666",
-                        textAlign: "center",
-                      }}
-                    >
-                      {BASIC_ELEMENTS.find((e) => e.id === firstSelected)?.name}
-                    </p>
+                    <div style={{ marginBottom: "1rem" }}>
+                      <p
+                        style={{
+                          fontSize: "1.5rem",
+                          fontWeight: "bold",
+                          color: "#ffffff",
+                          backgroundColor: "#646cff",
+                          textAlign: "center",
+                          paddingLeft: "1.5rem",
+                          paddingRight: "1.5rem",
+                          paddingTop: "0.5rem",
+                          paddingBottom: "0.5rem",
+                          borderRadius: "8px",
+                          display: "inline-block",
+                          margin: 0,
+                        }}
+                      >
+                        {
+                          BASIC_ELEMENTS.find((e) => e.id === firstSelected)
+                            ?.name
+                        }
+                      </p>
+                    </div>
                     <Model
                       ref={firstModelRef}
                       style={{
@@ -249,19 +265,29 @@ function AppContent() {
                 )}
                 {secondSelected && (
                   <div className="model-wrapper model-right" enable-xr>
-                    <p
-                      style={{
-                        marginBottom: "0.5rem",
-                        fontSize: "0.9rem",
-                        color: "#666",
-                        textAlign: "center",
-                      }}
-                    >
-                      {
-                        BASIC_ELEMENTS.find((e) => e.id === secondSelected)
-                          ?.name
-                      }
-                    </p>
+                    <div style={{ marginBottom: "1rem" }}>
+                      <p
+                        style={{
+                          fontSize: "1.5rem",
+                          fontWeight: "bold",
+                          color: "#ffffff",
+                          backgroundColor: "#4caf50",
+                          textAlign: "center",
+                          paddingLeft: "1.5rem",
+                          paddingRight: "1.5rem",
+                          paddingTop: "0.5rem",
+                          paddingBottom: "0.5rem",
+                          borderRadius: "8px",
+                          display: "inline-block",
+                          margin: 0,
+                        }}
+                      >
+                        {
+                          BASIC_ELEMENTS.find((e) => e.id === secondSelected)
+                            ?.name
+                        }
+                      </p>
+                    </div>
                     <Model
                       ref={secondModelRef}
                       style={{
@@ -290,10 +316,12 @@ function AppContent() {
             ) : (
               <p
                 style={{
-                  color: "#999",
-                  fontSize: "1.5rem",
+                  color: "#ffffff",
+                  fontSize: "2.5rem",
+                  fontWeight: "500",
                   textAlign: "center",
-                  margin: "2rem 0",
+                  margin: "2rem auto",
+                  width: "100%",
                 }}
               >
                 Select two elements to combine
@@ -308,6 +336,7 @@ function AppContent() {
         </div>
         <div className="bottom-section" enable-xr></div>
       </div>
+      <div className="menu-column-right" enable-xr></div>
     </div>
   );
 }

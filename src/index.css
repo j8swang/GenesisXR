@@ -80,32 +80,35 @@ html.is-spatial {
   .menu-column {
     background-color: transparent;
     --xr-background-material: translucent;
-    border-radius: 20%;
+    border-radius: 17%;
     transform-origin: right;
-    transform: rotateY(30deg);
-    
+    transform: rotateY(45deg);
+    --xr-back:50px;
   }
   
   .right-area {
     background-color: transparent;
     --xr-background-material: transparent
-    border-radius: 20%;
+    border-radius: 17%;
   }
   .top-section {
     background-color: transparent;
-    --xr-background-material: thin;
-    border-radius: 5%;
+    --xr-background-material: translucent;
+    border-radius: 8%;
     }
   
   .bottom-section {
     background-color: transparent;
     --xr-background-material: translucent;
-    border-radius: 5%;
+    border-radius: 6%;
   }
-
-  .count-card {
-    --xr-background-material: thick;
-    position: relative;
+  .menu-column-right {
+    background-color: transparent;
+    --xr-background-material: translucent;
+    border-radius: 17%;
+    transform-origin: left;
+    transform: rotateY(-45deg);
+    --xr-back:50px;
   }
 }
 
