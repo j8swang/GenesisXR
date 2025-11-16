@@ -6,21 +6,25 @@ import ModelDemo from "./ModelDemo";
 import { Model } from "@WebSpatial/react-sdk";
 import fireModel from "./assets/models/fire.usdz?url";
 import earthModel from "./assets/models/Earth.usdz?url";
+import waterModel from "./assets/models/water.usdz?url";
+import mudModel from "./assets/models/Mud.usdz?url";
+import dirtModel from "./assets/models/Dirt.usdz?url";
+import sandModel from "./assets/models/Sand.usdz?url";
+import glassModel from "./assets/models/Glass.usdz?url";
+import woodModel from "./assets/models/Wood.usdz?url";
 
 declare const __XR_ENV_BASE__: string;
 
-// Element types for Little Alchemy
+// Element types for Little Alchemy - matching available models
 type ElementType =
-  | "air"
   | "earth"
   | "fire"
   | "water"
-  | "plant"
-  | "rain"
   | "mud"
-  | "energy"
-  | "stone"
-  | "steam";
+  | "dirt"
+  | "sand"
+  | "glass"
+  | "wood";
 
 interface Element {
   id: ElementType;
@@ -29,22 +33,37 @@ interface Element {
 }
 
 const BASIC_ELEMENTS: Element[] = [
-  { id: "air", name: "Air", emoji: "💨" },
   { id: "earth", name: "Earth", emoji: "🌍" },
   { id: "fire", name: "Fire", emoji: "🔥" },
   { id: "water", name: "Water", emoji: "💧" },
-  { id: "plant", name: "Plant", emoji: "🌱" },
-  { id: "rain", name: "Rain", emoji: "🌧️" },
   { id: "mud", name: "Mud", emoji: "🟤" },
-  { id: "energy", name: "Energy", emoji: "🔋" },
-  { id: "stone", name: "Stone", emoji: "🪨" },
-  { id: "steam", name: "Steam", emoji: "💨" },
+  { id: "dirt", name: "Dirt", emoji: "🟫" },
+  { id: "sand", name: "Sand", emoji: "🏖️" },
+  { id: "glass", name: "Glass", emoji: "🪟" },
+  { id: "wood", name: "Wood", emoji: "🪵" },
 ];
 
 const getModelUrl = (element: ElementType): string => {
-  if (element === "fire") return fireModel;
-  if (element === "earth") return earthModel;
-  return fireModel;
+  switch (element) {
+    case "fire":
+      return fireModel;
+    case "earth":
+      return earthModel;
+    case "water":
+      return waterModel;
+    case "mud":
+      return mudModel;
+    case "dirt":
+      return dirtModel;
+    case "sand":
+      return sandModel;
+    case "glass":
+      return glassModel;
+    case "wood":
+      return woodModel;
+    default:
+      return fireModel;
+  }
 };
 
 function AppContent() {
@@ -210,10 +229,12 @@ function AppContent() {
                         width: "100%",
                         height: "100%",
                         minHeight: "400px",
+                        maxHeight: "600px",
                         borderRadius: 12,
                         border: "1px solid rgba(255,255,255,0.12)",
-                        overflow: "visible",
+                        overflow: "hidden",
                         display: "block",
+                        objectFit: "contain",
                       }}
                       onLoad={() => {
                         console.log("First model loaded:", firstSelected);
@@ -247,10 +268,12 @@ function AppContent() {
                         width: "100%",
                         height: "100%",
                         minHeight: "400px",
+                        maxHeight: "600px",
                         borderRadius: 12,
                         border: "1px solid rgba(255,255,255,0.12)",
-                        overflow: "visible",
+                        overflow: "hidden",
                         display: "block",
+                        objectFit: "contain",
                       }}
                       onLoad={() => {
                         console.log("Second model loaded:", secondSelected);

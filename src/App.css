@@ -145,7 +145,7 @@
 
 .models-container.two-models {
   justify-content: center;
-  gap: 0.2rem;
+  gap: 6rem;
 }
 
 .model-wrapper {
@@ -158,24 +158,32 @@
 }
 
 .models-container.single-model .model-wrapper {
-  width: 250%;
-  max-width: 250%;
+  width: 60%;
+  max-width: 60%;
   flex: 0 0 auto;
-  padding: 2rem;
+  padding: 1rem;
 }
 
 .models-container.single-model .model-wrapper model {
-  min-height: 1200px !important;
+  min-height: 400px !important;
+  max-height: 600px !important;
+  max-width: 100% !important;
+  object-fit: contain !important;
+  overflow: hidden !important;
 }
 
 .models-container.two-models .model-wrapper {
-  max-width: 40%;
-  width: 40%;
+  max-width: 30%;
+  width: 30%;
   flex: 0 0 auto;
 }
 
 .models-container.two-models .model-wrapper model {
-  min-height: 280px !important;
+  min-height: 250px !important;
+  max-height: 400px !important;
+  max-width: 100% !important;
+  object-fit: contain !important;
+  overflow: hidden !important;
 }
 
 .bottom-section {
