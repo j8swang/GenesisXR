@@ -97,6 +97,13 @@ function AppContent() {
   );
   const [supported, setSupported] = useState(false);
   const [newlyCreated, setNewlyCreated] = useState<ElementType | null>(null);
+  const [recipe, setRecipe] = useState<[ElementType, ElementType] | null>(null);
+  const [unlockedElements, setUnlockedElements] = useState<ElementType[]>([
+    "earth",
+    "water",
+    "fire",
+    "sand",
+  ]);
   const firstModelRef = useRef<any>(null);
   const secondModelRef = useRef<any>(null);
 
@@ -106,6 +113,10 @@ function AppContent() {
     setSupported(isSupported);
     console.log("HTMLModelElement supported:", isSupported);
   }, []);
+
+  useEffect(() => {
+    console.log("Unlocked elements:", unlockedElements);
+  }, [unlockedElements]);
 
   // Apply initial orientation once after the model is ready
   // useEffect(() => {
@@ -153,6 +164,7 @@ function AppContent() {
 
     // Clear the newly created element display when clicking any button
     setNewlyCreated(null);
+    setRecipe(null);
 
     // If clicking the first selected element, deselect it and promote second to first
     if (firstSelected === element) {
@@ -185,21 +197,52 @@ function AppContent() {
     }
   };
 
-  const handleCombine = () => {
-    if (firstSelected && secondSelected) {
-      const result = canCombine(firstSelected, secondSelected);
-      if (result) {
-        setNewlyCreated(result);
-        // Set the newly created element as the first selected
-        setFirstSelected(result);
-        setSecondSelected(null);
-        console.log(
-          `Combined ${firstSelected} + ${secondSelected} = ${result}`
-        );
-      } else {
-        console.log(`${firstSelected} + ${secondSelected} cannot combine`);
-      }
+  const handleCombine = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    console.log("=== COMBINE BUTTON CLICKED ===");
+    console.log("First selected:", firstSelected);
+    console.log("Second selected:", secondSelected);
+
+    if (!firstSelected || !secondSelected) {
+      console.error("Cannot combine - missing selections", {
+        firstSelected,
+        secondSelected,
+      });
+      alert(
+        `Cannot combine - missing selections. First: ${firstSelected}, Second: ${secondSelected}`
+      );
+      return;
     }
+
+    const result = canCombine(firstSelected, secondSelected);
+    console.log("Combination result:", result);
+
+    if (!result) {
+      console.error(`${firstSelected} + ${secondSelected} cannot combine`);
+      alert(`${firstSelected} + ${secondSelected} cannot combine`);
+      return;
+    }
+
+    console.log(`✓ Combining ${firstSelected} + ${secondSelected} = ${result}`);
+
+    // Store the recipe
+    setRecipe([firstSelected, secondSelected]);
+
+    // Add the newly created element to unlocked elements if not already unlocked
+    setUnlockedElements((prev) => {
+      const newList = !prev.includes(result) ? [...prev, result] : prev;
+      console.log("Updated unlocked elements:", newList);
+      return newList;
+    });
+
+    // Set the newly created element as the first selected
+    setNewlyCreated(result);
+    setFirstSelected(result);
+    setSecondSelected(null);
+
+    console.log("=== COMBINE COMPLETE ===");
   };
 
   return (
@@ -209,7 +252,16 @@ function AppContent() {
           Elements
         </h2>
         <div className="element-menu" enable-xr>
-          {BASIC_ELEMENTS.map((element) => {
+          {BASIC_ELEMENTS.filter((element) => {
+            const isUnlocked = unlockedElements.includes(element.id);
+            if (!isUnlocked && element.id === "sand") {
+              console.log(
+                "Sand not found in unlockedElements:",
+                unlockedElements
+              );
+            }
+            return isUnlocked;
+          }).map((element) => {
             const isFirstSelected = firstSelected === element.id;
             const isSecondSelected = secondSelected === element.id;
             return (
@@ -384,6 +436,7 @@ function AppContent() {
             <button
               onClick={handleCombine}
               className="combine-button"
+              type="button"
               style={{
                 width: "calc(100% - 4rem)",
                 padding: "1rem 2rem",
@@ -399,6 +452,8 @@ function AppContent() {
                 marginLeft: "2rem",
                 marginRight: "2rem",
                 transition: "background-color 0.2s ease",
+                position: "relative",
+                zIndex: 10,
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = "#535bf2";
@@ -462,7 +517,125 @@ function AppContent() {
           )}
         </div>
       </div>
-      <div className="menu-column-right" enable-xr></div>
+      <div className="menu-column-right" enable-xr>
+        {newlyCreated && recipe && (
+          <div style={{ padding: "1rem" }}>
+            <h2
+              style={{
+                textAlign: "center",
+                marginBottom: "1.5rem",
+                fontSize: "1.5rem",
+                fontWeight: "bold",
+                color: "#000000",
+              }}
+            >
+              Recipe
+            </h2>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "1rem",
+                alignItems: "center",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  padding: "0.75rem 1rem",
+                  backgroundColor: "#ffffff",
+                  borderRadius: "8px",
+                  width: "100%",
+                  justifyContent: "center",
+                }}
+              >
+                <span style={{ fontSize: "1.5rem" }}>
+                  {BASIC_ELEMENTS.find((e) => e.id === recipe[0])?.emoji}
+                </span>
+                <span
+                  style={{
+                    fontSize: "1rem",
+                    fontWeight: "500",
+                    color: "#000000",
+                  }}
+                >
+                  {BASIC_ELEMENTS.find((e) => e.id === recipe[0])?.name}
+                </span>
+              </div>
+              <span
+                style={{
+                  fontSize: "1.5rem",
+                  fontWeight: "bold",
+                  color: "#000000",
+                }}
+              >
+                +
+              </span>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  padding: "0.75rem 1rem",
+                  backgroundColor: "#ffffff",
+                  borderRadius: "8px",
+                  width: "100%",
+                  justifyContent: "center",
+                }}
+              >
+                <span style={{ fontSize: "1.5rem" }}>
+                  {BASIC_ELEMENTS.find((e) => e.id === recipe[1])?.emoji}
+                </span>
+                <span
+                  style={{
+                    fontSize: "1rem",
+                    fontWeight: "500",
+                    color: "#000000",
+                  }}
+                >
+                  {BASIC_ELEMENTS.find((e) => e.id === recipe[1])?.name}
+                </span>
+              </div>
+              <span
+                style={{
+                  fontSize: "1.5rem",
+                  fontWeight: "bold",
+                  color: "#000000",
+                }}
+              >
+                =
+              </span>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  padding: "0.75rem 1rem",
+                  backgroundColor: "#646cff",
+                  borderRadius: "8px",
+                  width: "100%",
+                  justifyContent: "center",
+                }}
+              >
+                <span style={{ fontSize: "1.5rem" }}>
+                  {BASIC_ELEMENTS.find((e) => e.id === newlyCreated)?.emoji}
+                </span>
+                <span
+                  style={{
+                    fontSize: "1rem",
+                    fontWeight: "bold",
+                    color: "#ffffff",
+                  }}
+                >
+                  {BASIC_ELEMENTS.find((e) => e.id === newlyCreated)?.name}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
