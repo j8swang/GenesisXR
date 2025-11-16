@@ -3,6 +3,9 @@ import "./App.css";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import SecondPage from "./SecondPage";
 import ModelDemo from "./ModelDemo";
+import { Model } from "@WebSpatial/react-sdk";
+import fireModel from './assets/models/fire.usdz?url';
+import earthModel from './assets/models/Earth.usdz?url';
 
 declare const __XR_ENV_BASE__: string;
 
@@ -38,12 +41,18 @@ const BASIC_ELEMENTS: Element[] = [
   { id: "steam", name: "Steam", emoji: "💨" },
 ];
 
+const getModelUrl = (element: ElementType): string => {
+  if (element === "fire") return fireModel;
+  if (element === "earth") return earthModel;
+  return fireModel;
+};
+
 function AppContent() {
   const [selectedElement, setSelectedElement] = useState<ElementType | null>(
     null
   );
   const [supported, setSupported] = useState(false);
-  const modelRef = useRef<HTMLModelElement | null>(null);
+  const modelRef = useRef<any>(null);
 
   useEffect(() => {
     const isSupported =
@@ -53,52 +62,47 @@ function AppContent() {
   }, []);
 
   // Apply initial orientation once after the model is ready
-  useEffect(() => {
-    console.log("Model effect triggered:", {
-      supported,
-      selectedElement,
-      hasRef: !!modelRef.current,
-    });
-    if (!supported || !modelRef.current || selectedElement !== "fire") return;
-    let cancelled = false;
+  // useEffect(() => {
+  //   console.log("Model effect triggered:", {
+  //     supported,
+  //     selectedElement,
+  //     hasRef: !!modelRef.current,
+  //   });
+  //   if (!supported || !modelRef.current || selectedElement !== "fire") return;
+  //   let cancelled = false;
 
-    (async () => {
-      try {
-        const el = modelRef.current!;
-        console.log("Waiting for model to be ready...");
-        // Wait for browser's default placement
-        await el.ready;
-        console.log("Model is ready!");
-        // Give WebKit a moment to finish any final fitting
-        await new Promise<void>((r) =>
-          requestAnimationFrame(() => requestAnimationFrame(() => r()))
-        );
-        if (cancelled) return;
+  //   (async () => {
+  //     try {
+  //       const el = modelRef.current!;
+  //       console.log("Waiting for model to be ready...");
+  //       // Wait for browser's default placement
+  //       await el.ready;
+  //       console.log("Model is ready!");
+  //       // Give WebKit a moment to finish any final fitting
+  //       await new Promise<void>((r) =>
+  //         requestAnimationFrame(() => requestAnimationFrame(() => r()))
+  //       );
+  //       if (cancelled) return;
 
-        // Rotate on top of the default placement matrix
-        const baseArr = Array.from(el.entityTransform.toFloat64Array());
-        const base = new DOMMatrix(baseArr);
-        const rotated = base.rotateAxisAngle(0, 1, 0, 90); // +90° around Y
-        el.entityTransform = rotated;
-        console.log("Model transform applied");
-      } catch (e) {
-        console.warn("Initial transform failed:", e);
-      }
-    })();
+  //       // Rotate on top of the default placement matrix
+  //       const baseArr = Array.from(el.entityTransform.toFloat64Array());
+  //       const base = new DOMMatrix(baseArr);
+  //       const rotated = base.rotateAxisAngle(0, 1, 0, 90); // +90° around Y
+  //       el.entityTransform = rotated;
+  //       console.log("Model transform applied");
+  //     } catch (e) {
+  //       console.warn("Initial transform failed:", e);
+  //     }
+  //   })();
 
-    return () => {
-      cancelled = true;
-    };
-  }, [supported, selectedElement]);
+  //   return () => {
+  //     cancelled = true;
+  //   };
+  // }, [supported, selectedElement]);
 
   const handleElementClick = (element: ElementType) => {
     console.log("Element clicked:", element);
     setSelectedElement(element);
-  };
-
-  const getModelUrl = (element: ElementType): string => {
-    if (element === "fire") return "/models/fire.usdz";
-    return "/models/fire.usdz"; // Default fallback
   };
 
   return (
@@ -139,7 +143,7 @@ function AppContent() {
       </div>
       <div className="right-area" enable-xr>
         <div className="top-section" enable-xr>
-          {selectedElement === "fire" ? (
+          {(selectedElement === "fire" || selectedElement === "earth") ? (
             supported ? (
               <>
                 <p
@@ -149,43 +153,36 @@ function AppContent() {
                     color: "#666",
                   }}
                 >
-                  Loading fire model...
+                  Loading {selectedElement} model...
                 </p>
-                {React.createElement(
-                  "model",
-                  {
-                    ref: modelRef,
-                    id: "fire-model",
-                    stagemode: "orbit",
-                    style: {
-                      width: "100%",
-                      height: "100%",
-                      minHeight: "400px",
-                      borderRadius: 12,
-                      border: "1px solid rgba(255,255,255,0.12)",
-                      overflow: "hidden",
-                      display: "block",
-                    },
-                    "enable-xr": true,
-                  } as any,
-                  [
-                    React.createElement("source", {
-                      key: "source",
-                      src: getModelUrl("fire"),
-                      type: "model/vnd.usdz+zip",
-                    }),
-                    React.createElement("img", {
-                      key: "img",
-                      alt: "Loading fire model…",
-                      src: "/poster.png",
-                      style: {
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      },
-                    }),
-                  ]
-                )}
+                <Model
+                  ref={modelRef}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    minHeight: "400px",
+                    borderRadius: 12,
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    overflow: "hidden",
+                    display: "block",
+                  }}
+                  onLoad={(e) => {
+                    console.log("onLoad fired!", e);
+                    console.log("target:", e.target);
+                    console.log("ready:", e.target.ready);
+                    console.log("currentSrc:", e.target.currentSrc);
+                    if (e.target.ready) {
+                      console.log("Model loaded successfully");
+                    } else {
+                      console.log("Model failed to load");
+                    }
+                  }}
+                >
+                  <source
+                    src={getModelUrl(selectedElement!)}
+                    type="model/vnd.usdz+zip"
+                  />
+                </Model>
               </>
             ) : (
               <p>
