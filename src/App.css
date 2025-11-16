@@ -50,6 +50,11 @@
   font-size: 1rem;
   text-align: left;
   width: 100%;
+  user-select: none;
+  -webkit-user-select: none;
+  pointer-events: auto;
+  position: relative;
+  z-index: 1;
 }
 
 .element-button:hover:not(.selected-first):not(.selected-second) {
@@ -167,15 +172,15 @@
 }
 
 .models-container.single-model .model-wrapper {
-  width: 60%;
-  max-width: 60%;
+  width: 48%;
+  max-width: 48%;
   flex: 0 0 auto;
   padding: 1rem;
 }
 
 .models-container.single-model .model-wrapper model {
-  min-height: 400px !important;
-  max-height: 600px !important;
+  min-height: 320px !important;
+  max-height: 480px !important;
   max-width: 100% !important;
   object-fit: contain !important;
   overflow: hidden !important;

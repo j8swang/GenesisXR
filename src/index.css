@@ -93,13 +93,13 @@ html.is-spatial {
   }
   .top-section {
     background-color: transparent;
-    --xr-background-material: translucent;
+    --xr-background-material: thin;
     border-radius: 8%;
     }
   
   .bottom-section {
     background-color: transparent;
-    --xr-background-material: translucent;
+    --xr-background-material: thin;
     border-radius: 6%;
   }
   .menu-column-right {

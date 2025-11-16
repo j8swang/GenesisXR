@@ -66,12 +66,37 @@ const getModelUrl = (element: ElementType): string => {
   }
 };
 
+// Combination rules: [element1, element2] => result
+type CombinationRule = [ElementType, ElementType, ElementType];
+
+const COMBINATION_RULES: CombinationRule[] = [
+  ["earth", "water", "mud"],
+  ["fire", "sand", "glass"],
+];
+
+// Check if two elements can combine and return the result
+const canCombine = (
+  element1: ElementType,
+  element2: ElementType
+): ElementType | null => {
+  for (const [a, b, result] of COMBINATION_RULES) {
+    if (
+      (element1 === a && element2 === b) ||
+      (element1 === b && element2 === a)
+    ) {
+      return result;
+    }
+  }
+  return null;
+};
+
 function AppContent() {
   const [firstSelected, setFirstSelected] = useState<ElementType | null>(null);
   const [secondSelected, setSecondSelected] = useState<ElementType | null>(
     null
   );
   const [supported, setSupported] = useState(false);
+  const [newlyCreated, setNewlyCreated] = useState<ElementType | null>(null);
   const firstModelRef = useRef<any>(null);
   const secondModelRef = useRef<any>(null);
 
@@ -121,8 +146,13 @@ function AppContent() {
   //   };
   // }, [supported, selectedElement]);
 
-  const handleElementClick = (element: ElementType) => {
+  const handleElementClick = (element: ElementType, e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
     console.log("Element clicked:", element);
+
+    // Clear the newly created element display when clicking any button
+    setNewlyCreated(null);
 
     // If clicking the first selected element, deselect it and promote second to first
     if (firstSelected === element) {
@@ -155,6 +185,23 @@ function AppContent() {
     }
   };
 
+  const handleCombine = () => {
+    if (firstSelected && secondSelected) {
+      const result = canCombine(firstSelected, secondSelected);
+      if (result) {
+        setNewlyCreated(result);
+        // Set the newly created element as the first selected
+        setFirstSelected(result);
+        setSecondSelected(null);
+        console.log(
+          `Combined ${firstSelected} + ${secondSelected} = ${result}`
+        );
+      } else {
+        console.log(`${firstSelected} + ${secondSelected} cannot combine`);
+      }
+    }
+  };
+
   return (
     <div className="main-layout" enable-xr>
       <div className="menu-column" enable-xr>
@@ -175,7 +222,8 @@ function AppContent() {
                 ]
                   .filter(Boolean)
                   .join(" ")}
-                onClick={() => handleElementClick(element.id)}
+                onClick={(e) => handleElementClick(element.id, e)}
+                type="button"
                 enable-xr
               >
                 <span className="element-emoji" enable-xr>
@@ -331,7 +379,82 @@ function AppContent() {
             </p>
           )}
         </div>
-        <div className="bottom-section" enable-xr></div>
+        <div className="bottom-section" enable-xr>
+          {firstSelected && secondSelected && (
+            <button
+              onClick={handleCombine}
+              className="combine-button"
+              style={{
+                width: "100%",
+                padding: "1rem 2rem",
+                fontSize: "1.5rem",
+                fontWeight: "bold",
+                backgroundColor: "#646cff",
+                color: "#ffffff",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                marginBottom: "2rem",
+                transition: "background-color 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#535bf2";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#646cff";
+              }}
+            >
+              Combine
+            </button>
+          )}
+          {newlyCreated && (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "1rem",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "1.2rem",
+                  fontWeight: "bold",
+                  color: "#333",
+                  margin: 0,
+                }}
+              >
+                New Element Created:
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  padding: "1rem",
+                  backgroundColor: "#f0f0f0",
+                  borderRadius: "8px",
+                  width: "100%",
+                }}
+              >
+                <span style={{ fontSize: "3rem" }}>
+                  {BASIC_ELEMENTS.find((e) => e.id === newlyCreated)?.emoji}
+                </span>
+                <p
+                  style={{
+                    fontSize: "1.5rem",
+                    fontWeight: "bold",
+                    color: "#333",
+                    margin: 0,
+                  }}
+                >
+                  {BASIC_ELEMENTS.find((e) => e.id === newlyCreated)?.name}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
       <div className="menu-column-right" enable-xr></div>
     </div>
