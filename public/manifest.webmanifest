@@ -1,5 +1,15 @@
 {
   "name": "GenesisXR",
+  "short_name": "GenesisXR",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
   "xr_main_scene": {
     "default_size": {
       "width": 2000,
