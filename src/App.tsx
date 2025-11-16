@@ -95,6 +95,11 @@ function AppContent() {
   );
   const [supported, setSupported] = useState(false);
   const [newlyCreated, setNewlyCreated] = useState<ElementType | null>(null);
+  const [recipe, setRecipe] = useState<[ElementType, ElementType] | null>(null);
+  const startingElements: ElementType[] = ["earth", "water", "fire", "sand"];
+  const [newlyUnlockedElements, setNewlyUnlockedElements] = useState<
+    ElementType[]
+  >([]);
   const firstModelRef = useRef<any>(null);
   const secondModelRef = useRef<any>(null);
 
@@ -104,6 +109,11 @@ function AppContent() {
     setSupported(isSupported);
     console.log("HTMLModelElement supported:", isSupported);
   }, []);
+
+  // Log newly unlocked elements whenever they change
+  useEffect(() => {
+    console.log("Newly unlocked elements:", newlyUnlockedElements);
+  }, [newlyUnlockedElements]);
 
   // Start playing binaural beats background music on app boot
   useEffect(() => {
@@ -167,6 +177,7 @@ function AppContent() {
 
     // Clear the newly created element display when clicking any button
     setNewlyCreated(null);
+    setRecipe(null);
 
     // If clicking the first selected element, deselect it and promote second to first
     if (firstSelected === element) {
@@ -193,40 +204,85 @@ function AppContent() {
     } else if (!secondSelected) {
       setSecondSelected(element);
     } else {
-      // If both are selected, clear both and make the new element the first
-      setFirstSelected(element);
-      setSecondSelected(null);
+      // If both are selected, promote second to first and make the new element the second
+      setFirstSelected(secondSelected);
+      setSecondSelected(element);
     }
   };
 
-  const handleCombine = () => {
-    if (firstSelected && secondSelected) {
-      // Play combine sound
-      playSound(getCombineSound(), 0.6);
+  const handleCombine = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-      const result = canCombine(firstSelected, secondSelected);
-      if (result) {
-        setNewlyCreated(result);
-        // Set the newly created element as the first selected
-        setFirstSelected(result);
-        setSecondSelected(null);
-        console.log(
-          `Combined ${firstSelected} + ${secondSelected} = ${result}`
-        );
-      } else {
-        console.log(`${firstSelected} + ${secondSelected} cannot combine`);
-      }
+    console.log("=== COMBINE BUTTON CLICKED ===");
+    console.log("First selected:", firstSelected);
+    console.log("Second selected:", secondSelected);
+
+    if (!firstSelected || !secondSelected) {
+      console.error("Cannot combine - missing selections", {
+        firstSelected,
+        secondSelected,
+      });
+      alert(
+        `Cannot combine - missing selections. First: ${firstSelected}, Second: ${secondSelected}`
+      );
+      return;
     }
+
+    // 🔊 Play combine sound when we have both elements
+    playSound(getCombineSound(), 0.6);
+
+    const result = canCombine(firstSelected, secondSelected);
+    console.log("Combination result:", result);
+
+    if (!result) {
+      console.error(`${firstSelected} + ${secondSelected} cannot combine`);
+      alert(`${firstSelected} + ${secondSelected} cannot combine`);
+      return;
+    }
+
+    console.log(`✓ Combining ${firstSelected} + ${secondSelected} = ${result}`);
+
+    // Store the recipe
+    setRecipe([firstSelected, secondSelected]);
+
+    // Add the newly created element to newly unlocked elements if not already unlocked
+    setNewlyUnlockedElements((prev) => {
+      if (!prev.includes(result) && !startingElements.includes(result)) {
+        const newList = [...prev, result];
+        console.log("Updated newly unlocked elements:", newList);
+        return newList;
+      }
+      return prev;
+    });
+
+    // Set the newly created element as the first selected
+    setNewlyCreated(result);
+    setFirstSelected(result);
+    setSecondSelected(null);
+
+    console.log("=== COMBINE COMPLETE ===");
   };
 
   return (
     <div className="main-layout" enable-xr>
       <div className="menu-column" enable-xr>
-        <h2 style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+        <h2
+          style={{
+            textAlign: "center",
+            marginBottom: "1.5rem",
+            marginTop: "2rem",
+            fontSize: "1.8rem",
+            fontWeight: "bold",
+          }}
+        >
           Elements
         </h2>
         <div className="element-menu" enable-xr>
-          {BASIC_ELEMENTS.map((element) => {
+          {/* Starting Elements */}
+          {BASIC_ELEMENTS.filter((element) =>
+            startingElements.includes(element.id)
+          ).map((element) => {
             const isFirstSelected = firstSelected === element.id;
             const isSecondSelected = secondSelected === element.id;
             return (
@@ -263,6 +319,63 @@ function AppContent() {
             );
           })}
         </div>
+
+        {/* Unlocked Section */}
+        {newlyUnlockedElements.length > 0 && (
+          <>
+            <h2
+              style={{
+                textAlign: "center",
+                marginBottom: "0.5rem",
+                marginTop: "4rem",
+                fontSize: "1.8rem",
+                fontWeight: "bold",
+              }}
+            >
+              Unlocked
+            </h2>
+            <div className="element-menu" enable-xr>
+              {BASIC_ELEMENTS.filter((element) =>
+                newlyUnlockedElements.includes(element.id)
+              ).map((element) => {
+                const isFirstSelected = firstSelected === element.id;
+                const isSecondSelected = secondSelected === element.id;
+                return (
+                  <button
+                    key={element.id}
+                    className={[
+                      "element-button",
+                      isFirstSelected ? "selected-first" : "",
+                      isSecondSelected ? "selected-second" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                    onClick={(e) => handleElementClick(element.id, e)}
+                    type="button"
+                    enable-xr
+                  >
+                    <span className="element-emoji" enable-xr>
+                      {element.emoji}
+                    </span>
+                    <span className="element-name" enable-xr>
+                      {element.name}
+                    </span>
+                    {isFirstSelected && (
+                      <span style={{ marginLeft: "auto", fontSize: "0.8rem" }}>
+                        1st
+                      </span>
+                    )}
+                    {isSecondSelected && (
+                      <span style={{ marginLeft: "auto", fontSize: "0.8rem" }}>
+                        2nd
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
       <div className="right-area" enable-xr>
         <div className="top-section" enable-xr>
@@ -401,18 +514,24 @@ function AppContent() {
             <button
               onClick={handleCombine}
               className="combine-button"
+              type="button"
               style={{
-                width: "100%",
+                width: "calc(100% - 4rem)",
                 padding: "1rem 2rem",
                 fontSize: "1.5rem",
                 fontWeight: "bold",
                 backgroundColor: "#646cff",
                 color: "#ffffff",
                 border: "none",
-                borderRadius: "8px",
+                borderRadius: "13px",
                 cursor: "pointer",
+                marginTop: "1.5rem",
                 marginBottom: "2rem",
+                marginLeft: "2rem",
+                marginRight: "2rem",
                 transition: "background-color 0.2s ease",
+                position: "relative",
+                zIndex: 10,
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = "#535bf2";
@@ -435,10 +554,11 @@ function AppContent() {
             >
               <p
                 style={{
-                  fontSize: "1.2rem",
+                  fontSize: "2rem",
                   fontWeight: "bold",
                   color: "#333",
                   margin: 0,
+                  marginTop: "2.5rem",
                 }}
               >
                 New Element Created:
@@ -448,11 +568,13 @@ function AppContent() {
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
+                  justifyContent: "center",
                   gap: "0.5rem",
                   padding: "1rem",
-                  backgroundColor: "#f0f0f0",
-                  borderRadius: "8px",
-                  width: "100%",
+                  backgroundColor: "transparent",
+                  borderRadius: "20px",
+                  width: "90%",
+                  minHeight: "100px",
                 }}
               >
                 <span style={{ fontSize: "3rem" }}>
@@ -473,7 +595,126 @@ function AppContent() {
           )}
         </div>
       </div>
-      <div className="menu-column-right" enable-xr></div>
+      <div className="menu-column-right" enable-xr>
+        {newlyCreated && recipe && (
+          <div style={{ padding: "1rem" }}>
+            <h2
+              style={{
+                textAlign: "center",
+                marginBottom: "1.5rem",
+                marginTop: "2rem",
+                fontSize: "1.8rem",
+                fontWeight: "bold",
+                color: "#000000",
+              }}
+            >
+              Recipe
+            </h2>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "1rem",
+                alignItems: "center",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  padding: "0.75rem 1rem",
+                  backgroundColor: "#ffffff",
+                  borderRadius: "8px",
+                  width: "100%",
+                  justifyContent: "center",
+                }}
+              >
+                <span style={{ fontSize: "1.5rem" }}>
+                  {BASIC_ELEMENTS.find((e) => e.id === recipe[0])?.emoji}
+                </span>
+                <span
+                  style={{
+                    fontSize: "1rem",
+                    fontWeight: "500",
+                    color: "#000000",
+                  }}
+                >
+                  {BASIC_ELEMENTS.find((e) => e.id === recipe[0])?.name}
+                </span>
+              </div>
+              <span
+                style={{
+                  fontSize: "1.5rem",
+                  fontWeight: "bold",
+                  color: "#000000",
+                }}
+              >
+                +
+              </span>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  padding: "0.75rem 1rem",
+                  backgroundColor: "#ffffff",
+                  borderRadius: "8px",
+                  width: "100%",
+                  justifyContent: "center",
+                }}
+              >
+                <span style={{ fontSize: "1.5rem" }}>
+                  {BASIC_ELEMENTS.find((e) => e.id === recipe[1])?.emoji}
+                </span>
+                <span
+                  style={{
+                    fontSize: "1rem",
+                    fontWeight: "500",
+                    color: "#000000",
+                  }}
+                >
+                  {BASIC_ELEMENTS.find((e) => e.id === recipe[1])?.name}
+                </span>
+              </div>
+              <span
+                style={{
+                  fontSize: "1.5rem",
+                  fontWeight: "bold",
+                  color: "#000000",
+                }}
+              >
+                =
+              </span>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  padding: "0.75rem 1rem",
+                  backgroundColor: "#646cff",
+                  borderRadius: "8px",
+                  width: "100%",
+                  justifyContent: "center",
+                }}
+              >
+                <span style={{ fontSize: "1.5rem" }}>
+                  {BASIC_ELEMENTS.find((e) => e.id === newlyCreated)?.emoji}
+                </span>
+                <span
+                  style={{
+                    fontSize: "1rem",
+                    fontWeight: "bold",
+                    color: "#ffffff",
+                  }}
+                >
+                  {BASIC_ELEMENTS.find((e) => e.id === newlyCreated)?.name}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
