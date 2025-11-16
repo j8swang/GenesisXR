@@ -191,9 +191,9 @@ function AppContent() {
     } else if (!secondSelected) {
       setSecondSelected(element);
     } else {
-      // If both are selected, clear both and make the new element the first
-      setFirstSelected(element);
-      setSecondSelected(null);
+      // If both are selected, promote second to first and make the new element the second
+      setFirstSelected(secondSelected);
+      setSecondSelected(element);
     }
   };
 
@@ -248,7 +248,15 @@ function AppContent() {
   return (
     <div className="main-layout" enable-xr>
       <div className="menu-column" enable-xr>
-        <h2 style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+        <h2
+          style={{
+            textAlign: "center",
+            marginBottom: "1.5rem",
+            marginTop: "2rem",
+            fontSize: "1.8rem",
+            fontWeight: "bold",
+          }}
+        >
           Elements
         </h2>
         <div className="element-menu" enable-xr>
@@ -524,7 +532,8 @@ function AppContent() {
               style={{
                 textAlign: "center",
                 marginBottom: "1.5rem",
-                fontSize: "1.5rem",
+                marginTop: "2rem",
+                fontSize: "1.8rem",
                 fontWeight: "bold",
                 color: "#000000",
               }}
