@@ -13,18 +13,16 @@ import sandModel from "./assets/models/Sand.usdz?url";
 import glassModel from "./assets/models/Glass.usdz?url";
 import woodModel from "./assets/models/Wood.usdz?url";
 
-declare const __XR_ENV_BASE__: string;
+// Import sound utilities
+import {
+  type ElementType,
+  getSoundUrl,
+  playSound,
+  getCombineSound,
+  backgroundMusic,
+} from "./soundUtils";
 
-// Element types for Little Alchemy - matching available models
-type ElementType =
-  | "earth"
-  | "fire"
-  | "water"
-  | "mud"
-  | "dirt"
-  | "sand"
-  | "glass"
-  | "wood";
+declare const __XR_ENV_BASE__: string;
 
 interface Element {
   id: ElementType;
@@ -112,9 +110,20 @@ function AppContent() {
     console.log("HTMLModelElement supported:", isSupported);
   }, []);
 
+  // Log newly unlocked elements whenever they change
   useEffect(() => {
     console.log("Newly unlocked elements:", newlyUnlockedElements);
   }, [newlyUnlockedElements]);
+
+  // Start playing binaural beats background music on app boot
+  useEffect(() => {
+    backgroundMusic.start();
+
+    // Cleanup function to stop background music when component unmounts
+    return () => {
+      backgroundMusic.cleanup();
+    };
+  }, []);
 
   // Apply initial orientation once after the model is ready
   // useEffect(() => {
@@ -159,6 +168,12 @@ function AppContent() {
     e?.preventDefault();
     e?.stopPropagation();
     console.log("Element clicked:", element);
+
+    // Play sound for the clicked element
+    const soundUrl = getSoundUrl(element);
+    if (soundUrl) {
+      playSound(soundUrl, 1.0);
+    }
 
     // Clear the newly created element display when clicking any button
     setNewlyCreated(null);
@@ -213,6 +228,9 @@ function AppContent() {
       );
       return;
     }
+
+    // 🔊 Play combine sound when we have both elements
+    playSound(getCombineSound(), 0.6);
 
     const result = canCombine(firstSelected, secondSelected);
     console.log("Combination result:", result);
