@@ -98,12 +98,10 @@ function AppContent() {
   const [supported, setSupported] = useState(false);
   const [newlyCreated, setNewlyCreated] = useState<ElementType | null>(null);
   const [recipe, setRecipe] = useState<[ElementType, ElementType] | null>(null);
-  const [unlockedElements, setUnlockedElements] = useState<ElementType[]>([
-    "earth",
-    "water",
-    "fire",
-    "sand",
-  ]);
+  const startingElements: ElementType[] = ["earth", "water", "fire", "sand"];
+  const [newlyUnlockedElements, setNewlyUnlockedElements] = useState<
+    ElementType[]
+  >([]);
   const firstModelRef = useRef<any>(null);
   const secondModelRef = useRef<any>(null);
 
@@ -115,8 +113,8 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
-    console.log("Unlocked elements:", unlockedElements);
-  }, [unlockedElements]);
+    console.log("Newly unlocked elements:", newlyUnlockedElements);
+  }, [newlyUnlockedElements]);
 
   // Apply initial orientation once after the model is ready
   // useEffect(() => {
@@ -230,11 +228,14 @@ function AppContent() {
     // Store the recipe
     setRecipe([firstSelected, secondSelected]);
 
-    // Add the newly created element to unlocked elements if not already unlocked
-    setUnlockedElements((prev) => {
-      const newList = !prev.includes(result) ? [...prev, result] : prev;
-      console.log("Updated unlocked elements:", newList);
-      return newList;
+    // Add the newly created element to newly unlocked elements if not already unlocked
+    setNewlyUnlockedElements((prev) => {
+      if (!prev.includes(result) && !startingElements.includes(result)) {
+        const newList = [...prev, result];
+        console.log("Updated newly unlocked elements:", newList);
+        return newList;
+      }
+      return prev;
     });
 
     // Set the newly created element as the first selected
@@ -260,16 +261,10 @@ function AppContent() {
           Elements
         </h2>
         <div className="element-menu" enable-xr>
-          {BASIC_ELEMENTS.filter((element) => {
-            const isUnlocked = unlockedElements.includes(element.id);
-            if (!isUnlocked && element.id === "sand") {
-              console.log(
-                "Sand not found in unlockedElements:",
-                unlockedElements
-              );
-            }
-            return isUnlocked;
-          }).map((element) => {
+          {/* Starting Elements */}
+          {BASIC_ELEMENTS.filter((element) =>
+            startingElements.includes(element.id)
+          ).map((element) => {
             const isFirstSelected = firstSelected === element.id;
             const isSecondSelected = secondSelected === element.id;
             return (
@@ -306,6 +301,63 @@ function AppContent() {
             );
           })}
         </div>
+
+        {/* Unlocked Section */}
+        {newlyUnlockedElements.length > 0 && (
+          <>
+            <h2
+              style={{
+                textAlign: "center",
+                marginBottom: "0.5rem",
+                marginTop: "4rem",
+                fontSize: "1.8rem",
+                fontWeight: "bold",
+              }}
+            >
+              Unlocked
+            </h2>
+            <div className="element-menu" enable-xr>
+              {BASIC_ELEMENTS.filter((element) =>
+                newlyUnlockedElements.includes(element.id)
+              ).map((element) => {
+                const isFirstSelected = firstSelected === element.id;
+                const isSecondSelected = secondSelected === element.id;
+                return (
+                  <button
+                    key={element.id}
+                    className={[
+                      "element-button",
+                      isFirstSelected ? "selected-first" : "",
+                      isSecondSelected ? "selected-second" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                    onClick={(e) => handleElementClick(element.id, e)}
+                    type="button"
+                    enable-xr
+                  >
+                    <span className="element-emoji" enable-xr>
+                      {element.emoji}
+                    </span>
+                    <span className="element-name" enable-xr>
+                      {element.name}
+                    </span>
+                    {isFirstSelected && (
+                      <span style={{ marginLeft: "auto", fontSize: "0.8rem" }}>
+                        1st
+                      </span>
+                    )}
+                    {isSecondSelected && (
+                      <span style={{ marginLeft: "auto", fontSize: "0.8rem" }}>
+                        2nd
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
       <div className="right-area" enable-xr>
         <div className="top-section" enable-xr>
