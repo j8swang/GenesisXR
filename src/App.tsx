@@ -385,16 +385,19 @@ function AppContent() {
               onClick={handleCombine}
               className="combine-button"
               style={{
-                width: "100%",
+                width: "calc(100% - 4rem)",
                 padding: "1rem 2rem",
                 fontSize: "1.5rem",
                 fontWeight: "bold",
                 backgroundColor: "#646cff",
                 color: "#ffffff",
                 border: "none",
-                borderRadius: "8px",
+                borderRadius: "13px",
                 cursor: "pointer",
+                marginTop: "1.5rem",
                 marginBottom: "2rem",
+                marginLeft: "2rem",
+                marginRight: "2rem",
                 transition: "background-color 0.2s ease",
               }}
               onMouseEnter={(e) => {
@@ -418,10 +421,11 @@ function AppContent() {
             >
               <p
                 style={{
-                  fontSize: "1.2rem",
+                  fontSize: "2rem",
                   fontWeight: "bold",
                   color: "#333",
                   margin: 0,
+                  marginTop: "2.5rem",
                 }}
               >
                 New Element Created:
@@ -431,11 +435,13 @@ function AppContent() {
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
+                  justifyContent: "center",
                   gap: "0.5rem",
                   padding: "1rem",
-                  backgroundColor: "#f0f0f0",
-                  borderRadius: "8px",
-                  width: "100%",
+                  backgroundColor: "transparent",
+                  borderRadius: "20px",
+                  width: "90%",
+                  minHeight: "100px",
                 }}
               >
                 <span style={{ fontSize: "3rem" }}>
